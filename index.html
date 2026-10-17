@@ -1,0 +1,222 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Test Plan INFOCAL</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bitter:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Layout: columna única tipo "parte de incendio"; tarjeta de pregunta única, barra de progreso por IGR */
+:root{
+  --bg:#f3f4ef; --surface:#ffffff; --ink:#1d2a22; --muted:#5d6b62; --line:#d6dbd1;
+  --pine:#24513a; --ember:#c4541c; --ok:#2f7a4a; --okbg:#e3f1e7; --bad:#b03a2e; --badbg:#f8e4e1;
+  --display:"Bitter",Georgia,serif; --body:"IBM Plex Sans",system-ui,sans-serif; --mono:"IBM Plex Mono",ui-monospace,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#141a16; --surface:#1d2520; --ink:#e7ece6; --muted:#9aa89f; --line:#334039;
+  --pine:#7fbf98; --ember:#f08a52; --ok:#7fcf98; --okbg:#1f3a2a; --bad:#f08b80; --badbg:#3d2220; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#141a16; --surface:#1d2520; --ink:#e7ece6; --muted:#9aa89f; --line:#334039;
+  --pine:#7fbf98; --ember:#f08a52; --ok:#7fcf98; --okbg:#1f3a2a; --bad:#f08b80; --badbg:#3d2220; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.55;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:28px 48px}
+.wrap{max-width:720px;margin:0 auto;display:flex;flex-direction:column;gap:20px}
+header .eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--ember)}
+header h1{font-family:var(--display);font-size:clamp(24px,5vw,32px);line-height:1.15;margin:6px 0 4px;text-wrap:balance;color:var(--pine)}
+header p{margin:0;color:var(--muted);font-size:14px}
+.progress{display:flex;align-items:center;gap:12px;font-family:var(--mono);font-size:13px;color:var(--muted)}
+.bar{flex:1;height:6px;background:var(--line);border-radius:3px;overflow:hidden}
+.bar span{display:block;height:100%;background:var(--ember);width:0;transition:width .3s}
+.score{font-variant-numeric:tabular-nums}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:24px;display:flex;flex-direction:column;gap:16px}
+.qnum{font-family:var(--mono);font-size:13px;color:var(--ember)}
+.qtext{font-size:18px;font-weight:600;margin:0;text-wrap:pretty}
+.opts{display:flex;flex-direction:column;gap:10px}
+.opt{display:flex;gap:12px;align-items:flex-start;text-align:left;width:100%;padding:12px 14px;border:1px solid var(--line);border-radius:8px;
+  background:transparent;color:var(--ink);font:inherit;font-size:15px;cursor:pointer;transition:border-color .15s,background .15s}
+.opt:hover:not(:disabled){border-color:var(--pine)}
+.opt:focus-visible,.btn:focus-visible,input:focus-visible{outline:2px solid var(--ember);outline-offset:2px}
+.opt .l{font-family:var(--mono);font-weight:500;color:var(--muted);min-width:1.4em}
+.opt:disabled{cursor:default}
+.opt.correct{border-color:var(--ok);background:var(--okbg)}
+.opt.correct .l{color:var(--ok)}
+.opt.wrong{border-color:var(--bad);background:var(--badbg)}
+.opt.wrong .l{color:var(--bad)}
+.feedback{border-left:3px solid var(--line);padding:4px 0 4px 14px;font-size:14px;color:var(--muted)}
+.feedback strong{color:var(--ink)}
+.feedback.ok{border-color:var(--ok)} .feedback.ko{border-color:var(--bad)}
+.actions{display:flex;flex-wrap:wrap;gap:10px;justify-content:flex-end}
+.btn{font:inherit;font-size:14px;font-weight:600;padding:10px 18px;border-radius:8px;border:1px solid var(--pine);background:var(--pine);color:var(--surface);cursor:pointer}
+.btn.ghost{background:transparent;color:var(--pine)}
+.btn:disabled{opacity:.4;cursor:default}
+.result h2{font-family:var(--display);color:var(--pine);margin:0;font-size:26px}
+.big{font-family:var(--display);font-size:56px;line-height:1;color:var(--ember);font-variant-numeric:tabular-nums}
+.fails{font-size:14px;color:var(--muted)}
+.lock{border-top:1px solid var(--line);padding-top:18px;display:flex;flex-direction:column;gap:10px}
+.lock summary{cursor:pointer;font-size:14px;color:var(--muted)}
+.lockrow{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.lockrow input{flex:1;min-width:0;font:inherit;padding:9px 12px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink)}
+.msg{font-size:13px;color:var(--bad);min-height:1em}
+/* Versión Word: documento blanco fijo, Arial 11 */
+#printZone{background:#fff;color:#000;border:1px solid var(--line);border-radius:6px;overflow-x:auto}
+#doc{font-family:Arial,Helvetica,sans-serif;font-size:11pt;line-height:1.4;color:#000;padding:28px}
+#doc h3{font-size:11pt;font-weight:bold;text-align:center;margin:0 0 14pt}
+#doc h4{font-size:11pt;font-weight:bold;margin:16pt 0 8pt}
+#doc p{margin:0 0 2pt}
+#doc .q{margin-bottom:10pt}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Tema 15 · Conocimientos específicos II</div>
+    <h1>Test de evaluación · Plan INFOCAL</h1>
+    <p>Decreto 6/2025, de 27 de marzo. 20 preguntas, una sola respuesta correcta.</p>
+  </header>
+
+  <div class="progress"><span id="pos">1 / 20</span><div class="bar"><span id="barFill"></span></div><span class="score" id="sc">0 aciertos</span></div>
+
+  <section class="card" id="quiz" aria-live="polite">
+    <div class="qnum" id="qnum"></div>
+    <p class="qtext" id="qtext"></p>
+    <div class="opts" id="opts"></div>
+    <div class="feedback" id="fb" hidden></div>
+    <div class="actions"><button class="btn" id="next" disabled>Siguiente</button></div>
+  </section>
+
+  <section class="card result" id="result" hidden>
+    <h2>Resultado</h2>
+    <div class="big" id="final"></div>
+    <div class="fails" id="fails"></div>
+    <div class="actions"><button class="btn" id="restart">Repetir el test</button></div>
+  </section>
+
+  <div class="lock">
+    <details id="lockBox">
+      <summary>Versión para Word / imprimir (acceso con contraseña)</summary>
+      <form class="lockrow" id="lockForm">
+        <input type="password" id="pwd" placeholder="Contraseña" autocomplete="off" aria-label="Contraseña">
+        <button class="btn" type="submit">Desbloquear</button>
+      </form>
+      <div class="msg" id="lockMsg"></div>
+    </details>
+    <div id="printArea" hidden>
+      <div class="actions" style="justify-content:flex-start;margin-bottom:10px">
+        <button class="btn" id="copyBtn">Copiar para Word</button>
+        <button class="btn ghost" id="hideBtn">Ocultar</button>
+        <span class="msg" id="copyMsg" style="color:var(--muted);align-self:center"></span>
+      </div>
+      <div id="printZone"><div id="doc"></div></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const Q=[
+{q:"¿Qué norma aprueba el vigente Plan Especial de Protección Civil ante Emergencias por Incendios Forestales en Castilla y León (Plan INFOCAL)?",o:["Decreto 274/1999, de 28 de octubre","Decreto 6/2025, de 27 de marzo","Decreto 4/2019, de 28 de febrero","Decreto-ley 2/2023, de 13 de abril"],c:1,e:"El Decreto 6/2025 (BOCYL núm. 62, de 31 de marzo de 2025) aprueba el Plan y deroga el Decreto 274/1999. El Decreto 4/2019 aprueba el PLANCAL y el Decreto-ley 2/2023 recoge medidas urgentes tras los incendios de 2022."},
+{q:"Según el Plan INFOCAL, ¿qué documento deben cumplimentar todos los municipios de Castilla y León, con independencia de su nivel de riesgo?",o:["Plan de actuación de ámbito local","Plan de autoprotección por riesgo de incendio forestal","Guía de respuesta ante emergencias por incendios forestales","Plan de salvaguarda de bienes del patrimonio cultural"],c:2,e:"Todos los municipios deben cumplimentar la Guía de respuesta (Anexo VII). El plan de actuación de ámbito local solo es obligatorio para los municipios del Anexo III."},
+{q:"¿Cómo define el Plan INFOCAL un incendio forestal «estabilizado»?",o:["Aquel que, sin llegar a estar controlado, evoluciona dentro de las líneas de control establecidas según las previsiones y labores de extinción","Aquel que se extiende sin control, con propagación libre del fuego y uno o más frentes","Aquel cuyo avance se ha aislado dentro de líneas de control, aunque existan zonas aisladas con llamas en el interior del perímetro","Aquel en el que no existen materiales en ignición en el perímetro y es altamente improbable su reproducción"],c:0,e:"Las opciones b, c y d corresponden, respectivamente, a los estados activo, controlado y extinguido."},
+{q:"No tienen la consideración de monte los enclaves forestales en terrenos agrícolas con una superficie inferior a:",o:["Cinco áreas","Una hectárea","Cincuenta áreas","Diez áreas"],c:3,e:"Quedan excluidos del concepto de monte los enclaves forestales en terrenos agrícolas de superficie inferior a diez áreas, así como el suelo urbano o urbanizable."},
+{q:"Los terrenos cuyo cultivo agrícola haya sido abandonado tienen la consideración de monte cuando hayan adquirido signos inequívocos de estado forestal y el abandono supere:",o:["Diez años","Quince años","Veinte años","Treinta años"],c:2,e:"El plazo es superior a veinte años, salvo que estén acogidos a programas públicos de abandono temporal de la producción agraria."},
+{q:"La época de peligro alto (EPA) comprende, al menos:",o:["123 días, del 12 de junio al 12 de octubre","92 días, del 1 de julio al 30 de septiembre","123 días, del 15 de junio al 15 de octubre","122 días, del 1 de junio al 30 de septiembre"],c:0,e:"La EPA comprende al menos 123 días, del 12 de junio al 12 de octubre. Fuera de ese periodo puede declararse por Orden de la persona titular de la Consejería."},
+{q:"¿Mediante qué instrumento se declara la época de peligro medio (EPM)?",o:["Orden de la persona titular de la Consejería","Decreto de la Junta de Castilla y León","Resolución de la Delegación Territorial","Resolución de la Dirección General"],c:3,e:"La EPM se declara por Resolución de la Dirección General, al nivel territorial más conveniente. La Orden de la Consejería es el instrumento para declarar la EPA fuera de su periodo ordinario."},
+{q:"Cuando AEMET predice un riesgo de incendio muy alto o extremo, ¿qué situación de peligro meteorológico se considera de inmediato, como mínimo, en ese ámbito?",o:["Normal","Alarma","Alerta","Alarma extrema"],c:2,e:"La predicción de AEMET de riesgo muy alto o extremo implica al menos la consideración inmediata de alerta, sin perjuicio de que se declare una situación superior."},
+{q:"Un incendio puede calificarse como IGR-1 si, entre otras circunstancias, se necesitan para estabilizarlo más de:",o:["6 horas de trabajo de extinción","12 horas de trabajo de extinción","24 horas de trabajo de extinción","48 horas de trabajo de extinción"],c:1,e:"Entre las circunstancias del IGR-1 figura necesitar más de 12 horas de trabajo de extinción para estabilizar el incendio."},
+{q:"Entre las circunstancias que permiten calificar un incendio como IGR-2 está que puedan peligrar masas arboladas superiores a:",o:["30 ha","50 ha","100 ha","300 ha"],c:3,e:"Más de 300 ha corresponde al IGR-2. El umbral de 30 ha es el del IGR-1."},
+{q:"En un incendio de ámbito provincial, ¿quién declara el IGR-2?",o:["La persona titular de la Delegación Territorial de la Junta, a propuesta motivada de la DPE","La Dirección Provincial de la Emergencia (DPE) directamente","La Dirección Autonómica de la Emergencia (DAE)","La persona titular de la Subdelegación del Gobierno"],c:0,e:"La DPE eleva propuesta motivada a la persona titular de la Delegación Territorial, que declara el IGR-2 y constituye con el Subdelegado del Gobierno el Comité de Dirección y el CECOPI. La DPE declara el IGR-1."},
+{q:"En Situación Operativa 2 (b), la dirección del Plan INFOCAL la asume:",o:["La persona titular de la Dirección General, por delegación","La Dirección Autonómica de la Emergencia","Un Comité de Dirección formado por la persona titular de la Consejería y la de la Delegación del Gobierno en Castilla y León, constituido como CECOPIA","El Comité de Dirección Territorial previsto en el PLEGEM"],c:2,e:"En SIT-2 (b) dirige un Comité de Dirección (Consejero/a y Delegado/a del Gobierno, con funciones de dirección a cargo del primero), constituido como CECOPIA. La delegación en la Dirección General opera en preemergencia y en SIT-0, SIT-1 y SIT-2 (a); el Comité de Dirección Territorial, en SIT-3."},
+{q:"¿Quién declara la Situación Operativa 3 (SIT-3)?",o:["La Dirección del Plan INFOCAL","La Dirección Autonómica de la Emergencia","La Delegación del Gobierno en Castilla y León","La persona titular del Ministerio competente en materia de interior, al declarar la emergencia de interés nacional"],c:3,e:"La SIT-3 es correspondiente y consecutiva a la declaración de emergencia de interés nacional por el Ministerio competente en materia de interior."},
+{q:"La Dirección Autonómica de la Emergencia (DAE) corresponde a:",o:["La persona titular de la Dirección General competente en incendios forestales","La persona titular de la Jefatura de Servicio con competencias en extinción de incendios forestales","La persona titular de la Jefatura del Servicio Territorial con competencias en incendios forestales","La persona titular de la Consejería competente"],c:1,e:"La DAE es la Jefatura de Servicio con competencias en extinción (funciones delegadas en personal técnico del CAM). La Jefatura del Servicio Territorial es la DPE y la Consejería ostenta la Dirección del Plan."},
+{q:"En el análisis de la interfaz urbano-forestal, el «área cercana», responsable directa de la posible ignición de las edificaciones, tiene un radio de:",o:["30 metros","50 metros","100 metros","200 metros"],c:0,e:"El área cercana tiene 30 m de radio y es la primera barrera de defensa; el área lejana, 200 m, sirve para valorar si el incendio puede alcanzar alta intensidad."},
+{q:"En la clasificación de asentamientos de la interfaz urbano-forestal, un núcleo de menos de 1 ha con 3 o 4 casas se clasifica como:",o:["AR – Asentamiento rural","ARA – Rural aislado","ARD – Rural disperso","AU – Asentamiento urbano"],c:2,e:"ARD: menos de 1 ha y 3 o 4 casas. ARA: 1 o 2 casas. AR: entre 1 y 50 ha, o menos de 1 ha con 5 o más edificaciones. AU: más de 50 ha."},
+{q:"Respecto al Director/a Técnico/a de Extinción (DTE), señale la afirmación correcta:",o:["Puede coexistir con el Director/a de Extinción en el mismo incendio, repartiéndose los sectores","Lo designa en todo caso la Dirección Autonómica de la Emergencia","Al desmovilizarse, el incendio queda sin dirección de extinción durante la fase de liquidación","Es personal técnico (Ingeniero de Montes, Ingeniero Técnico Forestal o equivalente) que releva al DE, sin que puedan coexistir ambas posiciones"],c:3,e:"Lo moviliza la DPE cuando el incendio evoluciona desfavorablemente; DE y DTE no coexisten y, al desmovilizarse el DTE, se designa de nuevo un DE para la liquidación y vigilancia del perímetro."},
+{q:"Por defecto, el mando del Grupo de Seguridad corresponde a:",o:["El miembro de la Guardia Civil que corresponda","El jefe de la Policía Local del municipio afectado","El mando de la Unidad Militar de Emergencias","La dirección de extinción del incendio"],c:0,e:"El Grupo de Seguridad lo dirige por defecto el miembro de la Guardia Civil que corresponda, en comunicación permanente con la dirección de extinción. La dirección de extinción manda el Grupo de Extinción."},
+{q:"¿Cuál es la principal herramienta informática para el seguimiento y evaluación de las emergencias, que conecta CPM y CAM e integra la base de datos de incendios desde 1968?",o:["EGIF","SINFO","SMEIF","CECOPI"],c:1,e:"SINFO (Seguimiento de Incendios Forestales) se coordina con la Estadística General de Incendios Forestales (EGIF) del Estado. El SMEIF es un modelo organizativo y el CECOPI un centro de coordinación."},
+{q:"El peligro de consolidación se obtiene cruzando la productividad potencial del territorio y la precipitación estival con la frecuencia de incendios mayores de:",o:["10 ha","30 ha","50 ha","100 ha"],c:2,e:"El peligro de consolidación usa la frecuencia de incendios mayores de 50 ha (Anexo IV) e identifica las zonas propensas a incendios de alta intensidad o de sexta generación."}
+];
+const L=["a","b","c","d"];
+let i=0,score=0,answered=false,failed=[];
+const $=id=>document.getElementById(id);
+
+function render(){
+  const it=Q[i];answered=false;
+  $("qnum").textContent="Pregunta "+(i+1)+" de "+Q.length;
+  $("qtext").textContent=it.q;
+  $("pos").textContent=(i+1)+" / "+Q.length;
+  $("barFill").style.width=(i/Q.length*100)+"%";
+  $("fb").hidden=true;$("next").disabled=true;
+  $("next").textContent=i===Q.length-1?"Ver resultado":"Siguiente";
+  const box=$("opts");box.innerHTML="";
+  it.o.forEach((t,k)=>{
+    const b=document.createElement("button");b.className="opt";b.id="opt"+k;
+    b.innerHTML='<span class="l">'+L[k]+')</span><span></span>';
+    b.lastChild.textContent=t;
+    b.addEventListener("click",()=>pick(k));
+    box.appendChild(b);
+  });
+}
+function pick(k){
+  if(answered)return;answered=true;
+  const it=Q[i],btns=$("opts").children;
+  for(const b of btns)b.disabled=true;
+  btns[it.c].classList.add("correct");
+  const fb=$("fb");fb.hidden=false;
+  if(k===it.c){score++;fb.className="feedback ok";fb.innerHTML="<strong>Correcto.</strong> ";}
+  else{btns[k].classList.add("wrong");failed.push(i+1);fb.className="feedback ko";fb.innerHTML="<strong>Incorrecto. La respuesta es "+L[it.c]+").</strong> ";}
+  fb.appendChild(document.createTextNode(it.e));
+  $("sc").textContent=score+(score===1?" acierto":" aciertos");
+  $("next").disabled=false;$("next").focus();
+}
+$("next").addEventListener("click",()=>{
+  if(i<Q.length-1){i++;render();}
+  else{
+    $("barFill").style.width="100%";$("quiz").hidden=true;$("result").hidden=false;
+    const nota=(score/Q.length*10).toFixed(1).replace(".",",");
+    $("final").textContent=score+" / "+Q.length;
+    $("fails").textContent="Nota: "+nota+" sobre 10. "+(failed.length?"Preguntas falladas: "+failed.join(", ")+".":"Sin fallos.");
+  }
+});
+$("restart").addEventListener("click",()=>{i=0;score=0;failed=[];$("sc").textContent="0 aciertos";$("result").hidden=true;$("quiz").hidden=false;render();});
+render();
+
+/* Versión Word protegida */
+const H="b558efec7be95139bcb617c48ecffc45d5d8818a81ed47b456f78477d6e3422f";
+async function sha(t){
+  const d=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(t));
+  return [...new Uint8Array(d)].map(x=>x.toString(16).padStart(2,"0")).join("");
+}
+function esc(s){return s.replace(/&/g,"&amp;").replace(/</g,"&lt;");}
+function buildDoc(){
+  let h='<h3>TEST DE EVALUACIÓN - Plan INFOCAL: normativa sobre incendios forestales en Castilla y León</h3>';
+  Q.forEach((it,n)=>{
+    h+='<div class="q"><p><b>'+(n+1)+'. '+esc(it.q)+'</b></p>';
+    it.o.forEach((t,k)=>h+='<p>'+L[k]+') '+esc(t)+'</p>');
+    h+='</div>';
+  });
+  h+='<h4>RESPUESTAS CORRECTAS</h4>';
+  Q.forEach((it,n)=>h+='<p><b>'+(n+1)+'-'+L[it.c]+'</b>: '+esc(it.e)+'</p>');
+  $("doc").innerHTML=h;
+}
+$("lockForm").addEventListener("submit",async e=>{
+  e.preventDefault();
+  let ok=false;
+  try{ok=(await sha($("pwd").value))===H;}catch(err){$("lockMsg").textContent="El navegador no permite comprobar la contraseña.";return;}
+  if(ok){buildDoc();$("printArea").hidden=false;$("lockBox").open=false;$("lockMsg").textContent="";$("pwd").value="";}
+  else $("lockMsg").textContent="Contraseña incorrecta.";
+});
+$("hideBtn").addEventListener("click",()=>{$("printArea").hidden=true;$("doc").innerHTML="";});
+$("copyBtn").addEventListener("click",async()=>{
+  const el=$("doc");
+  const html='<div style="font-family:Arial;font-size:11pt">'+el.innerHTML+'</div>';
+  try{
+    if(window.ClipboardItem){
+      await navigator.clipboard.write([new ClipboardItem({"text/html":new Blob([html],{type:"text/html"}),"text/plain":new Blob([el.innerText],{type:"text/plain"})})]);
+    }else{await navigator.clipboard.writeText(el.innerText);}
+    $("copyMsg").textContent="Copiado. Pégalo en Word.";
+  }catch(err){
+    const r=document.createRange();r.selectNodeContents(el);const s=getSelection();s.removeAllRanges();s.addRange(r);
+    $("copyMsg").textContent="Texto seleccionado: pulsa Ctrl+C.";
+  }
+});
+</script>
+
+</body></html>
